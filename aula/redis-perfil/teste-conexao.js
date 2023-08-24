@@ -16,7 +16,9 @@ async function teste() {
     await cli.connect()
     //const resultado = await cli.ping()
     //console.log(resultado)
-    await cli.set('app', 'Chave gerada pela aplicação Nodejs')
+    //await cli.set('app', 'Chave gerada pela aplicação Nodejs')
+    const ret = await cli.get('app')
+    console.log(ret)
     console.log('fim')
 }
 
