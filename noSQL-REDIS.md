@@ -434,55 +434,37 @@ start();
 
 ## Replicação com Container
 
-- Criar uma rede Docker: `docker network create local-network`
-- Criar 3 instâncias do redis na mesma rede:
-  - `docker run -it -d --name redis-node-1 --network local-network redis:5.0.3`
-  - `docker run -it -d --name redis-node-2 --network local-network redis:5.0.3`
-  - `docker run -it -d --name redis-node-3 --network local-network redis:5.0.3`
-- Iniciar as instâncias do redis nos containers:
-- `docker attach redis-node-1`
-- Obter o IP do container com um `ping redis-node-1`
-- Editar o arquivo de configuração: `nano /etc/redis.conf`
-- Incluir o IP na propriedade bind
-- Desabilitar o modo protegido: `protected-mode no`
-- Verificar log: `tail -f /var/log/redis/redis.log &`
-- Iniciar o nó master: `redis-server /etc/redis.conf &`
-- Iniciar os nós slaves: `redis-server --replicaof redis-node-1 6379 &`
-
-- Configuração do **master**:
-
-```
-bind 127.0.0.1 redis-node-1
-protected-mode no
-```
-
-- Configuração dos **slaves**:
-
-```
-bind 127.0.0.1 redis-node-2
-slaveof redis-node-1 6379
-protected-mode no
-```
+- Criar 3 instâncias do redis dentro do [Docker Playground](https://labs.play-with-docker.com/)
+- Iniciar uma das instâncias (nó master - IP_MASTER)
+  `redis-server --protected-mode no &`
+- Iniciar as instâncias do redis nos containers (slaves):
+- `redis-server --protected-mode no  --replicaof <IP_MASTER> 6379 &`
+- Criar uma chave no `master`
+- Consultar a chave nos `slaves`
 
 ## Sentinel
 
-- Copiar o arquivo `/etc/redis-sentinel.conf` para `/etc/sentinel.conf`
-- Configurar o monitoramento dos nós no arquivo copiado:
-```
-port 26379
-sentinel monitor master redis-node-1 6379 2
-sentinel down-after-milliseconds master 5000
-sentinel failover-timeout master 5000
-
-```
-
+- O **Sentinel** permite acrescentar alta disponibilidade ao **Redis**
+  `redis-sentinel -v`
+- Criar uma instância do **Redis** que será o **Sentinel**
+- Acessar a pasta home `cd ~`
+- Criar um arquivo de configuração `touch sentinel.conf` dentro da instância do **Sentinel**
+- Configurar o monitoramento dos nós no arquivo de configuração:
+  ```
+  port 26379
+  sentinel monitor master <IP1> 6379 2
+  sentinel down-after-milliseconds master 5000
+  sentinel failover-timeout master 5000
+  ```
+- Iniciar o **Sentinel**
+  `redis-sentinel sentinel.conf &`
 - Informações sentinel:
 
 ```
-redis-cli -h redis-node-3 -p 26379
+redis-cli -p 26379
 info sentinel
-sentinel get-master-addr-by-name node1
-sentinel get-master-addr-by-name node2
+sentinel get-master-addr-by-name master
+sentinel replicas master
 ```
 
 - Nos nós slaves alterar o IP para apontar para o master
@@ -493,4 +475,22 @@ sentinel get-master-addr-by-name node2
 - Iniciar o sentinel no master e slave: `redis-sentinel /etc/sentinel.conf &`
 - No master, acessar o sentinel: `redis-cli -p 5000`
 - Verificar o master atual: `sentinel master mymaster`
-- Parar o master: ``
+- Parar o master: `redis-cli -p 6379 DEBUG sleep 30`
+
+## Clusters
+
+- Criar um arquivo `redis.conf` para cada nó do cluster com a configuração abaixo:
+```
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+```
+- O cluster é criado com
+
+```
+redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+--cluster-replicas 1
+```
+- Conectar em um dos nós do cluster para criar as chaves
