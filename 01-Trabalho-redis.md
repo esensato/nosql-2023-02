@@ -9,7 +9,3 @@
 - Obter as credenciais de acesso ao serviço
 - Iniciar o servidor da aplicação (dentro do diretório `sistema-fila`) `node server.js`
 - Abrir o navegador e acessar a URL `http://localhost:8000/`
-
-# Implementação
-
-- 
