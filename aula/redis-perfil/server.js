@@ -7,6 +7,7 @@ var app = express()
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookie())
+app.set('view engine', 'ejs')
 
 // Cliente redis
 const cli = redis.createClient({
@@ -17,8 +18,20 @@ const cli = redis.createClient({
     }
 });
 
-app.get("/", (req, res) => {
-    res.status(200).send('Ok');
+app.get("/", async (req, res) => {
+    const token = req.cookies.token
+    if (token) {
+        const corfrente = await cli.hGet(token, "corfrente")
+        const corfundo = await cli.hGet(token, "corfundo")
+        if (corfrente && corfundo) {
+            res.render("home", { "corfrente": corfrente, "corfundo": corfundo });
+        } else {
+            res.sendFile(__dirname + "/public/login.html");
+        }
+
+    } else {
+        res.sendFile(__dirname + "/public/login.html");
+    }
 })
 
 app.post("/login", async (req, res) => {
