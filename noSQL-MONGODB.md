@@ -154,30 +154,37 @@ dnf update -y
     db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$set: {metragem: {largura: 40, profundidade: 60}}})
     db.imovel.find().pretty()
     ```
-## Consultas
+## Consultas Básicas
 
 - A forma mais simples de efetuar consultas ao MongoDB é por meio do `find()`
 - Na sua forma mais simples o `find()` retorna todos os documentos de uma coleção
     ```javascript
     imoveis=[
-        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Casa", endereco: "Rua Oeste, 30", configuracao: {quartos: 2, banheiro: 3, vagas: 2}, lazer: ["piscina", "jardim"]},
-        {tipo: "Apartamento", endereco: "Rua Leste, 500", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Apartamento", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Apartamento", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
-        {tipo: "Apartamento", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"], valor: 100000},
+        {tipo: "Casa", endereco: "Rua Oeste, 30", configuracao: {quartos: 2, banheiro: 3, vagas: 2}, lazer: ["piscina", "jardim"], valor: 180000},
+        {tipo: "Apartamento", endereco: "Rua Leste, 500", configuracao: {quartos: 1, banheiro: 1}, lazer: ["churrasqueira", "piscina"], valor: 90000},
+        {tipo: "Apartamento", endereco: "Rua Norte, 100", configuracao: {quartos: 4, banheiro: 3}, lazer: ["jardim", "academia", "playground"], valor: 300000},
+        {tipo: "Casa", endereco: "Rua Norte, 200", configuracao: {quartos: 5, banheiro: 3}, lazer: ["piscina"], valor: 400000},
+        {tipo: "Casa", endereco: "Rua Sul, 20", configuracao: {quartos: 3, banheiro: 2}, lazer: ["churrasqueira"], valor: 300000},
+        {tipo: "Apartamento", endereco: "Rua Sul, 30", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"], valor: 80000},
+        {tipo: "Casa", endereco: "Rua Leste, 400", configuracao: {quartos: 1, banheiro: 1}, lazer: ["churrasqueira", "piscina"], valor: 50000},
+        {tipo: "Casa", endereco: "Rua Leste, 100", configuracao: {quartos: 2, banheiro: 1}, lazer: ["jardim"], valor: 400000},
+        {tipo: "Apartamento", endereco: "Rua Oeste, 40", configuracao: {quartos: 2, banheiro: 2}, lazer: ["jardim", "academia", "playground", "piscina"], valor: 130000},
     ]
     db.imovel.insertMany(imoveis)
     ```
 
 - Um filtro pode ser fornecido como parâmetro na forma de chave: valor
 - Mais de uma chave: valor pode ser fornecida e são tratadas como um **AND**
+    ```javascript
+    db.imovel.find({tipo: "Apartamento"})
+    db.imovel.find({tipo: "Apartamento", endereco: "Rua Leste, 500"})
+    ```
 - É possível selecionar determinados campos e excluir alguns no resultado da consulta
-- Os campos são definidos no segundo parâmetro do find() onde o 1 indica a inclusão e 0 a exclusão
+- Os campos são definidos no segundo parâmetro do `find()` onde o **1** indica a inclusão e **0** a exclusão
+    ```javascript
+    db.imovel.find({tipo: "Apartamento"},{_id: 0, lazer: 1})
+    ```
 - Critérios podem ser fornecidos como filtros para as consultas: 
     - `$lt` <
     - `$lte` <=
@@ -186,18 +193,85 @@ dnf update -y
     - `$ne` <>
     - `$in`(`$nin`) permite incluir / excluir um conjunto de valores na consulta de um campo 
     - `$or` define cláusulas inclusivas na consulta (operação OR)
-- As consultas permitem que os critérios de filtros sejam especificados por meio de expressões regulares compatíveis com Pearl (PCRE - https://www.pcre.org/)
-Dica: para testar expressões regulares - https://regex101.com/
-Para utilizar expressões regulares como critério basta especificar a expressão em $regex:
-db.movies.find({"atores": "Joao"}) à retorna todos os registros onde o array atores possua ao menos um elemento
-"Joao"
-db.movies.find({"atores":{$all:["Joao", "Maria"]}})
-àretorna todos os registros onde o array atores possua "Joao"
-E "Maria" (ao menos)
-db.movies.find({"atores":["Joao", "Maria"]}) à retorna todos os registros onde o array atores possua EXATAMENTE "Joao" e "Maria" (nesta ordem)
-db.movies.find({"atores.0":"Joao"}) à busca por índice no array, retornando documentos onde o primeiro ator na lista (índice 0) seja "Joao"
-db.movies.find({"atores":{$size: 2}}) à retorna documentos que possuam dois elementos no array atores
-No exemplo abaixo temos um documento embedded com as notas de um filme divididas por categorias Para consultar filmes cuja nota em fotografia seja 9:
-db.movies.find({"notas.fotografia":9})
-Ou ainda maior ou menor que determinado valor:
-db.movies.find({"notas.fotografia":{$gt: 5}})
+    
+    ```javascript
+    db.imovel.find({"configuracao.quartos": {$gt: 2}})
+    db.imovel.find({$or:[{"configuracao.quartos": {$eq: 1}}, {"configuracao.quartos": {$gt: 2}}]})
+    db.imovel.find({"configuracao.quartos": {$in: [3,5]}})
+    ```
+- As consultas permitem que os critérios de filtros sejam especificados por meio de expressões regulares compatíveis com Pearl [PCRE](https://www.pcre.org/)
+- Dica: para [testar expressões regulares](https://regex101.com/)
+- Para utilizar expressões regulares como critério basta especificar a expressão em `$regex`:
+    ```javascript
+    db.imovel.find({endereco: {$regex: "^Rua Oeste"}})
+    ```
+## Consultas Arrays
+
+- `db.imovel.find({lazer: "piscina"})`: retorna todos os registros onde o *array* lazer possua ao menos um elemento
+"piscina"
+- `db.imovel.find({lazer:{$all:["academia", "piscina"]}})`: retorna todos os registros onde o *array* lazer possua "academia" **E** "piscina" (ao menos)
+- `db.imovel.find({"lazer":["academia", "piscina"]})`: retorna todos os registros onde o *array* lazer possua **EXATAMENTE** "academia" e "piscina" (nesta ordem)
+- `db.imovel.find({"lazer.0":"jardim"})`: busca por índice no array, retornando documentos onde o primeiro item de lazer na lista (índice 0) seja "jardim"
+- `db.imovel.find({"lazer":{$size: 2}})`: retorna documentos que possuam dois elementos no array lazer
+
+## Agregações
+
+    ```javascript
+    db.imovel.aggregate([
+        {$group:{_id: "$tipo", total:{$sum: "$valor"}}}
+    ])
+    ```
+- Agregações possíveis
+    - `$sum` soma 
+    - `$avg` média
+    - `$max` máximo
+    - `$min` mínimo
+    - `$first` primeiro item 
+    - `$last` último item
+- Um estágio de ordenação dos dados pode ser definido por `$sort` que recebe o atributo e 1 (crescente) ou -1 (descendente)
+- Com o `$project` define-se quais atributos serão considerados
+    ```javascript
+    db.imovel.aggregate([
+        {$project:{_id: 0, endereco: 1, valor: 1}},
+        {$sort:{valor: -1, endereco: 1}}
+    ])
+    ```
+- Novos estágios podem ser adicionados por exemplo para filtrar os documentos com o `$match`
+    ```javascript
+    db.imovel.aggregate([
+        {$match:{lazer: "piscina"}},
+        {$project:{_id: 0, endereco: 1, valor: 1}},
+        {$sort:{valor: -1, endereco: 1}}
+    ])
+    ```
+- Contadores podem ser utilizados para totalizar resultados com filtros aplicados utilizando o `$count`
+    ```javascript
+    db.imovel.aggregate([
+        {$match:{lazer: "piscina"}},
+        {$count: "total_piscina"}
+    ])
+    ```
+- É possível converter arrays em simples objetos com o `$unwind`
+    ```javascript
+    db.imovel.aggregate([
+        {$unwind: "$lazer"},
+        {$group:{_id: "$lazer", total:{$sum: "$valor"}}}
+    ])
+    ```
+## Consultas Where
+
+- Neste tipo de consulta é possível incluir código javascript para processar cada um dos documentos de uma coleção É um recurso muito poderoso que permite implementar consultas com maior complexidade
+    ```javascript
+    db.imovel.find({$where: function () {
+        if (this.endereco.indexOf("500") === -1)
+            return false;
+        else return true;
+    }})
+    ```
+## Cursores
+- Permitem manipular o resultado de uma consulta de forma flexível
+    ```javascript
+    var imoveis = db.imovel.find()
+        imoveis.forEach(function(imovel) { print(imovel.endereco);
+    })
+    ```
