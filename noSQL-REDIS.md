@@ -444,12 +444,6 @@ start();
 
 ## Sentinel
 
-```mermaid
-graph TD;
-    Sentinel-->Master;
-    Master-->Slave 1;
-```
-
 - O **Sentinel** permite acrescentar alta disponibilidade ao **Redis**
   `redis-sentinel -v`
 - Criar uma instância do **Redis** que será o **Sentinel**
