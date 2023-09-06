@@ -48,6 +48,7 @@ dnf update -y
 ```mermaid
 graph TD;
     mongod-->mongosh;
+    mongod-->compass;
 ```
 
 `yum install -y mongodb-org`
