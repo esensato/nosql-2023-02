@@ -251,7 +251,7 @@ graph TD;
 
 ## Agregações
 
-- [Agregações](https://www.mongodb.com/docs/manual/reference/operator/aggregation/)
+- [Agregações](https://www.mongodb.com/docs/manual/reference/operator/aggregation/) permitem realizar várias operações sobre uma coleção
     ```javascript
     db.imovel.aggregate([
         {$group:{_id: "$tipo", total:{$sum: "$valor"}}}
