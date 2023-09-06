@@ -44,6 +44,12 @@ dnf update -y
 
 ## Instalando Mongodb no Container
 
+
+```mermaid
+graph TD;
+    mongod-->mongosh;
+```
+
 `yum install -y mongodb-org`
 
 ## Iniciando o servidor
