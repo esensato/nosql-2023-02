@@ -434,6 +434,10 @@ start();
 
 ## Replicação com Container
 
+```mermaid
+graph LR;
+    master --> slave1 & slave2;
+```
 - Criar 3 instâncias do redis dentro do [Docker Playground](https://labs.play-with-docker.com/)
 - Iniciar uma das instâncias (nó master - IP_MASTER)
   `redis-server --protected-mode no &`
