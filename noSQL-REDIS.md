@@ -444,6 +444,14 @@ start();
 
 ## Sentinel
 
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
 - O **Sentinel** permite acrescentar alta disponibilidade ao **Redis**
   `redis-sentinel -v`
 - Criar uma instância do **Redis** que será o **Sentinel**
@@ -460,12 +468,12 @@ start();
   `redis-sentinel sentinel.conf &`
 - Informações sentinel:
 
-```
-redis-cli -p 26379
-info sentinel
-sentinel get-master-addr-by-name master
-sentinel replicas master
-```
+  ```
+  redis-cli -p 26379
+  info sentinel
+  sentinel get-master-addr-by-name master
+  sentinel replicas master
+  ```
 
 - Nos nós slaves alterar o IP para apontar para o master
 - Alterar os nomes dos nós nas demais configurações

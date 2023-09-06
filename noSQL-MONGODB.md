@@ -1,0 +1,203 @@
+# Redis
+
+## Referência
+
+https://www.mongodb.com/
+
+## Conceitos
+
+- É um banco de dados orientado a documentos
+- Projetado para proporcional escalabilidade horizontal (scale out), isto é, ao invés de investir recursos aumentando
+a capacidade de um servidor novos computadores são adicionados ao cluster
+- Escalabilidade transparente para a aplicação / desenvolvedor à o próprio MongoDB cuida disso
+- Apresenta alta performance
+- Recursos de indexação, replicação, uso de javascript nativo no lado servidor, consultas com expressões regulares, etc...
+- Dados estruturados em **Documentos** agrupados em **Coleções**
+
+## Instalação
+
+- [Instalação do MongoDB](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials)
+
+## Utilizando Docker
+
+[Docker Playground](https://labs.play-with-docker.com/)
+
+## Preparando o Ambiente
+
+- Criar uma imagem baseada no centOS
+
+`docker pull centos`
+
+- Iniciar um `container`
+
+`docker run -it -p 27017:27017 --name mongodb centos`
+
+- Atualizar o repositório do `yum`
+
+```
+cd /etc/yum.repos.d/
+echo -e '[mongodb-org-7.0]\nname=MongoDB Repository\nbaseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/7.0/x86_64/\ngpgcheck=1\nenabled=1\ngpgkey=https://www.mongodb.org/static/pgp/server-7.0.asc' > mongodb-org-7.0.repo
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+dnf update -y
+```
+
+## Instalando Mongodb no Container
+
+`yum install -y mongodb-org`
+
+## Iniciando o servidor
+
+- Criar um diretório para conter o banco de dados, por exemplo:
+    ```bash
+    mkdir ~/mongodb
+    cd ~/mongodb
+    ```
+- Iniciar o servidor
+
+    `mongod --dbpath /root/mongodb --fork --logpath /dev/null`
+
+- Acessar o cliente
+
+    `mongosh`
+
+- Cliente aceita código em *javascript*
+    ```javascript
+    function mensagem() {
+        return "Alo Mongodb!!!"
+    }
+
+    mensagem()
+    ``` 
+## Comandos Básicos
+- `help`: exibe descrição dos comandos
+- `cls`: limpa a tela
+- `show databases`: lista os bancos de dados
+- Criar / utilizar um banco de dados
+
+    ```javascript
+    use imobiliaria
+    show collections
+    ```
+- Criar uma **collection** e um **documento**
+
+    ```javascript
+    db.tipo_imovel.insertOne({nome: "Residencial"})
+    db.tipo_imovel.find()
+    ```
+## _id
+
+- Atributo `_id` deve ser obrigatório para cada documento
+- Deve ser uma sequência de 12 bytes hexadecimais (24 caracteres)
+- Pode-se fornecer um `_id` explicitamente ou ele pode ser gerado automaticamente (caso não seja fornecido explicitamente)
+- `ObjectId` encapsula o `_id`
+
+# Operações
+
+- Inserir mais de um documento:
+
+    ```javascript
+    db.tipo_imovel.insertMany([{nome: "Comercial"}, {nome: "Temporada"}])
+    db.tipo_imovel.find().pretty()
+    ```
+- Atualizando um documento:
+
+    ```
+    db.tipo_imovel.updateOne({_id: ObjectId('64f888e0825db8d91dcfcb7f')}, {$set: {nome: "Air B&B"}})
+    ```
+- `$set` cria / atualiza um campo em um documento `$unset` remove um campo
+- `$inc` incrementa o valor de um campo numérico (pode ser negativo também, decrementando)
+    ```javascript
+    db.imovel.insertOne({endereco: "Rua Leste, 152"})
+    db.imovel.updateOne({endereco: "Rua Leste, 152"}, {$set:{quartos:1}})
+    db.imovel.updateOne({ endereco: "Rua Leste, 152" }, { $inc: {"quartos":1}})
+    db.imovel.updateOne({endereco: "Rua Leste, 152"}, {$unset:{quartos:-1}})
+    ```
+- Um documento pode ser substituído integralmente por outro com o `replaceOne({filtro}, novo_doc)`
+    ```javascript
+    db.imovel.replaceOne({endereco: "Rua Leste, 152"}, {endereco: "Rua Oeste, 155", cidade: "São Paulo"})
+    db.imovel.find().pretty()
+    ```
+- A exclusão de um documento se dá com `deleteOne` passando um seletor como parâmetro Para excluir mais de um ao mesmo tempo utilizar o `deleteMany({filtro})`
+- Uma coleção inteira pode ser excluída por meio da função `drop()`
+    ```javascript
+    db.imovel.deleteOne({endereco: "Rua Oeste, 155"})
+    db.imovel.find().pretty()
+    show collections
+    db.imovel.drop()
+    ```
+
+## Operações com Arrays
+
+- *Arrays* são suportados nativamente como um tipo de dados
+    ```javascript
+    db.imovel.insertOne({endereco: "Rua Oeste, 155", comodos: ["sala", "quarto 1", "quarto 2"]})
+    db.imovel.find().pretty()
+    ```
+- `$push` cria / adiciona elementos a um array
+- `$each` modificador de `$push` que permite incluir mais de um elemento no array
+    ```javascript
+    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$push: {comodos: "banheiro social"}})
+    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$push: {comodos: {$each: ["cozinha", "banheiro serviço"]}}})
+    db.imovel.find().pretty()
+    ```
+- `$addToSet` é semelhante ao `$push` mas previne que valores duplicados sejam inseridos no array
+- `$pull` remove um elemento do array baseado em um critério (item dentro do *array*)
+- `$pop` também pode ser utilizado para remover elementos do final (`{"key": 1}`) ou início (`{"key": -1}`) do *array*, onde *key* indica o nome do atributo
+    ```javascript
+    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pull: {comodos: "banheiro social"}})
+    db.imovel.find().pretty()
+    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pop: {comodos: -1}})
+    ```
+- Documentos podem ser definidos como atributos de outros documentos
+    ```javascript
+    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$set: {metragem: {largura: 40, profundidade: 60}}})
+    db.imovel.find().pretty()
+    ```
+## Consultas
+
+- A forma mais simples de efetuar consultas ao MongoDB é por meio do `find()`
+- Na sua forma mais simples o `find()` retorna todos os documentos de uma coleção
+    ```javascript
+    imoveis=[
+        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Casa", endereco: "Rua Oeste, 30", configuracao: {quartos: 2, banheiro: 3, vagas: 2}, lazer: ["piscina", "jardim"]},
+        {tipo: "Apartamento", endereco: "Rua Leste, 500", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Apartamento", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Apartamento", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Casa", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+        {tipo: "Apartamento", endereco: "Rua Leste, 123", configuracao: {quartos: 1, banheiro: 1}, lazer: ["jardim"]},
+    ]
+    db.imovel.insertMany(imoveis)
+    ```
+
+- Um filtro pode ser fornecido como parâmetro na forma de chave: valor
+- Mais de uma chave: valor pode ser fornecida e são tratadas como um **AND**
+- É possível selecionar determinados campos e excluir alguns no resultado da consulta
+- Os campos são definidos no segundo parâmetro do find() onde o 1 indica a inclusão e 0 a exclusão
+- Critérios podem ser fornecidos como filtros para as consultas: 
+    - `$lt` <
+    - `$lte` <=
+    - `$gt` >
+    - `$gte` >= 
+    - `$ne` <>
+    - `$in`(`$nin`) permite incluir / excluir um conjunto de valores na consulta de um campo 
+    - `$or` define cláusulas inclusivas na consulta (operação OR)
+- As consultas permitem que os critérios de filtros sejam especificados por meio de expressões regulares compatíveis com Pearl (PCRE - https://www.pcre.org/)
+Dica: para testar expressões regulares - https://regex101.com/
+Para utilizar expressões regulares como critério basta especificar a expressão em $regex:
+db.movies.find({"atores": "Joao"}) à retorna todos os registros onde o array atores possua ao menos um elemento
+"Joao"
+db.movies.find({"atores":{$all:["Joao", "Maria"]}})
+àretorna todos os registros onde o array atores possua "Joao"
+E "Maria" (ao menos)
+db.movies.find({"atores":["Joao", "Maria"]}) à retorna todos os registros onde o array atores possua EXATAMENTE "Joao" e "Maria" (nesta ordem)
+db.movies.find({"atores.0":"Joao"}) à busca por índice no array, retornando documentos onde o primeiro ator na lista (índice 0) seja "Joao"
+db.movies.find({"atores":{$size: 2}}) à retorna documentos que possuam dois elementos no array atores
+No exemplo abaixo temos um documento embedded com as notas de um filme divididas por categorias Para consultar filmes cuja nota em fotografia seja 9:
+db.movies.find({"notas.fotografia":9})
+Ou ainda maior ou menor que determinado valor:
+db.movies.find({"notas.fotografia":{$gt: 5}})
