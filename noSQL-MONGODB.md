@@ -104,6 +104,28 @@ graph TD;
 - Deve ser uma sequência de 12 bytes hexadecimais (24 caracteres)
 - Pode-se fornecer um `_id` explicitamente ou ele pode ser gerado automaticamente (caso não seja fornecido explicitamente)
 - `ObjectId` encapsula o `_id`
+- Função `toString()` retorna a *String* representada pelo `ObjectId`
+- Função `getTimestamp()` retorna o *timestamp* de um `ObjectId`
+
+## Tipos de Dados
+
+- null Valores nulos
+- true / false Boolean
+- 3.14, 3 Números
+- "Teste" String
+- `new Date()` / `ISODate()` (sem o new) Date
+- `new Date("<YYYY-mm-dd>")` / `ISODate("<YYYY-mm-dd>")` (sem o new)  Date
+- `ObjectId()` Chave única (_id)
+- [1,2,3] Array
+- {"novo": "documento"} Documento embutido - embedded
+
+## Operações Sobre Datas
+- `new Date().getUTCFullYear()`
+- `new Date().getUTCMonth()`
+- `new Date().getUTCDate()`
+- `new Date().getUTCHours()`
+- `new Date().getUTCMinutes()`
+- `new Date().getUTCSeconds()`
 
 # Operações
 
@@ -229,12 +251,13 @@ graph TD;
 
 ## Agregações
 
+- [Agregações](https://www.mongodb.com/docs/manual/reference/operator/aggregation/)
     ```javascript
     db.imovel.aggregate([
         {$group:{_id: "$tipo", total:{$sum: "$valor"}}}
     ])
     ```
-- Agregações possíveis
+- Algumas agregações possíveis
     - `$sum` soma 
     - `$avg` média
     - `$max` máximo
