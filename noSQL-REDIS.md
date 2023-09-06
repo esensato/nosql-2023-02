@@ -446,10 +446,9 @@ start();
 
 ```mermaid
 graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+    Sentinel-->Master;
+    Master-->Slave 1;
+    Master-->Slave 1;
 ```
 
 - O **Sentinel** permite acrescentar alta disponibilidade ao **Redis**
