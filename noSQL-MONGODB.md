@@ -14,6 +14,12 @@ a capacidade de um servidor novos computadores são adicionados ao cluster
 - Recursos de indexação, replicação, uso de javascript nativo no lado servidor, consultas com expressões regulares, etc...
 - Dados estruturados em **Documentos** agrupados em **Coleções**
 
+```mermaid
+graph TD;
+    banco_dados-->collection;
+    collection-->document;
+```
+
 ## Instalação
 
 - [Instalação do MongoDB](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials)
