@@ -448,7 +448,6 @@ start();
 graph TD;
     Sentinel-->Master;
     Master-->Slave 1;
-    Master-->Slave 1;
 ```
 
 - O **Sentinel** permite acrescentar alta disponibilidade ao **Redis**
