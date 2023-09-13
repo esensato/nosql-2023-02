@@ -50,7 +50,6 @@ dnf update -y
 
 ## Instalando Mongodb no Container
 
-
 ```mermaid
 graph TD;
     mongod-->mongosh;
@@ -62,13 +61,21 @@ graph TD;
 ## Iniciando o servidor
 
 - Criar um diretório para conter o banco de dados, por exemplo:
-    ```bash
+    ```
     mkdir ~/mongodb
     cd ~/mongodb
     ```
 - Iniciar o servidor
 
     `mongod --dbpath /root/mongodb --fork --logpath /dev/null`
+
+- Verificar estatísticas
+
+    `mongostat`
+
+- Verificar leituras e escritas em *collections*
+
+    `mongotop`
 
 - Acessar o cliente
 
@@ -97,6 +104,7 @@ graph TD;
     ```javascript
     db.tipo_imovel.insertOne({nome: "Residencial"})
     db.tipo_imovel.find()
+    db.tipo_imovel.findOne()
     ```
 ## _id
 
@@ -215,6 +223,10 @@ graph TD;
     db.imovel.find({tipo: "Apartamento"})
     db.imovel.find({tipo: "Apartamento", endereco: "Rua Leste, 500"})
     ```
+- Os resultados podem ser orderados por `sort` (1 ordem crescente e -1 decrescente)
+    
+    `db.imovel.find({tipo: "Apartamento"}).sort({endereco: 1})`
+
 - É possível selecionar determinados campos e excluir alguns no resultado da consulta
 - Os campos são definidos no segundo parâmetro do `find()` onde o **1** indica a inclusão e **0** a exclusão
     ```javascript
@@ -248,6 +260,31 @@ graph TD;
 - `db.imovel.find({"lazer":["academia", "piscina"]})`: retorna todos os registros onde o *array* lazer possua **EXATAMENTE** "academia" e "piscina" (nesta ordem)
 - `db.imovel.find({"lazer.0":"jardim"})`: busca por índice no array, retornando documentos onde o primeiro item de lazer na lista (índice 0) seja "jardim"
 - `db.imovel.find({"lazer":{$size: 2}})`: retorna documentos que possuam dois elementos no array lazer
+
+## Indices e Performance
+
+- O plano de execução que uma consulta pode ser visualizado por `explain` acompanhado da consulta
+
+    `db.imovel.explain().find({"valor": {$eq: 90000}})`
+
+- Para visualizar as estatísticas da execução:
+
+    `db.imovel.explain("executionStats").find({"valor": {$eq: 90000}})`
+
+- Criar um índice (1 indica ordem crescente e -1 decrescente)
+
+    `db.imovel.createIndex({valor: 1})`
+
+- Pode-se criar índices compostos por mais de um campo
+- No caso dos índices compostos a ordem dos mesmos é levada em consideração no plano de execução
+- Também é possível criar um índice parcial que será aplicado somente a uma condição específica
+- No caso abaixo, o índice somente será aplicado quando o valor do imóvel for maior do que 200000 na pesquisa
+
+    `db.imovel.createIndex({valor: 1}, {partialFilterExpression:{valor:{$gt: 200000}}})`
+- Existindo mais de um índice para uma **collection** é possível forçar o uso de um índice específico ao executar um `find` por meio da função `hint` que recebe como parâmetro o nome do índice a ser utilizado
+- Para excluir um índice
+
+    `db.imovel.dropIndex("valor_1")`
 
 ## Agregações
 
@@ -294,6 +331,14 @@ graph TD;
         {$group:{_id: "$lazer", total:{$sum: "$valor"}}}
     ])
     ```
+- Outra opção interessante é o `$lookup` que permite realizar *joins* entre **collections**
+    ```javascript
+    $lookup:{   from:"Nome coleção destino",
+                localField: "Nome do campo local (origem)",
+                foreignField: "Nome do campo join (destino)",
+                as: "Nome do atributo na coleção origem onde os resultados serão adicionados"
+    }
+    ```
 ## Consultas Where
 
 - Neste tipo de consulta é possível incluir código javascript para processar cada um dos documentos de uma coleção É um recurso muito poderoso que permite implementar consultas com maior complexidade
@@ -311,3 +356,104 @@ graph TD;
         imoveis.forEach(function(imovel) { print(imovel.endereco);
     })
     ```
+## Exportando / Importando Coleções
+- É possível exportar coleções inteiras para serem importadas em outros bancos de dados
+
+    `mongoexport --collection=tipo_imovel --db=imobiliaria --out=tipo_imovel.json`
+
+    ou (para servidores remotos)
+
+    `mongoexport --uri="mongodb://mongodb0.example.com:27017/imobiliaria" --collection=imobiliaria --out=tipo_imovel.json`
+
+- Para importar
+
+    `mongoimport --db=imobiliaria --collection=imobiliaria --file=tipo_imovel.json`
+
+- Utilizar o parâmetro `uri` para servidores remotos
+
+## Exportando / Importando Banco de Dados
+- Para exportar um banco de dados completo, com todas as coleções
+
+    `mongodump --db=imobiliaria`
+
+- Para importar
+
+    `mongorestore dump/imobiliaria/imobiliaria.bson`
+
+## Validação de Schema
+
+- Apesar da característica flexível do *schema* baseado em documentos é possível [Definir Regras](https://www.mongodb.com/docs/manual/core/schema-validation/specify-json-schema/#std-label-schema-validation-json) para a validação
+
+    ```javascript
+    db.createCollection("proprietario", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            title: "Validação de Proprietário",
+            required: [ "nome", "cpf", "total_imoveis"],
+            properties: {
+                nome: {
+                bsonType: "string",
+                description: "'nome' deve ser uma string e obrigatório"
+                },
+                cpf: {
+                bsonType: "int",
+                description: "'cpf' deve ser um inteiro e obrigatório"
+                },
+                total_imoveis: {
+                bsonType: "int",
+                minimum: 1,
+                description: "'total_imoveis' deve ser maior do que zero"
+                }
+            }
+        }
+    }
+    } )
+    ```
+## Mongodb na Cloud
+
+- [Mongodb Atlas](https://www.mongodb.com/pt-br/atlas/database)
+
+## Cliente Interface Amigável
+
+- [Mongodb Compass](https://www.mongodb.com/try/download/compass)
+
+## Use Cases
+
+## Integração Aplicações (Nodejs)
+
+- **MongoDB** possui uma série de [drivers](https://docs.mongodb.com/drivers/) para várias linguagens de programação
+- Especificamente para **Nodejs** existe o [driver mongodb](https://mongodb.github.io/node-mongodb-native/)
+- Criar uma pasta `mkdir imobiliaria`
+- Acessar a pasta `cd imobiliaria`
+- Iniciar um projeto **Nodejs** `npm init -y`
+- Instalar o cliente **MongoDB** para **Nodejs** `npm install mongodb --save`
+- Criar o arquivo abaixo com o nome `testeMongodb.js`
+
+  ```javascript
+    const MongoClient = require('mongodb').MongoClient;
+
+    async function testeConexao() {
+
+        // obter a string de conexão do Atlas ou utilizar a conexão local
+        const url = 'mongodb+srv://teste:teste@cluster0.wnbdk2i.mongodb.net/?retryWrites=true&w=majority';
+        // Instancia um cliente para o mongo (como um shell mongo)
+        let client = new MongoClient(url);
+        // Abre a conexão
+        await client.connect();
+        // cria uma coleção
+        const collection = client.db('imobiliaria').collection('imovel');
+        // insere um documento na coleção
+        const doc = { tipo: "Casa", endereco: "Rua Leste, 123", configuracao: { quartos: 1, banheiro: 1 }, lazer: ["jardim"], valor: 100000 };
+        //const ret = await collection.insertOne(doc);
+        console.log(ret);
+        const cursor = await collection.find();
+        console.log(await cursor.next());
+        // Fecha a conexão
+        client.close();
+
+    }
+
+    testeConexao();
+  ```
+- Executar `node testeMongodb.js`
