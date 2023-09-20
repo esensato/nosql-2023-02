@@ -332,7 +332,7 @@ graph TD;
     ])
     ```
 - Outra opção interessante é o `$lookup` que permite realizar *joins* entre **collections**
-    ```json
+    ```
     $lookup:{   from:"Nome coleção destino",
                 localField: "Nome do campo local (origem)",
                 foreignField: "Nome do campo join (destino)",
@@ -464,7 +464,7 @@ graph TD;
 - Iniciar cada servidor com a opção `replSet`
 `mongod --replSet "rs0" --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all`
 - Acessar o servidor master via `mongosh` e adicionar os membros (replicas)
-    ```json
+    ```javascript
         rs.initiate( {
         _id : "rs0",
         members: [
