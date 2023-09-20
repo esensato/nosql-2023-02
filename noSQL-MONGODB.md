@@ -67,7 +67,7 @@ graph TD;
     ```
 - Iniciar o servidor
 
-    `mongod --dbpath /root/mongodb --fork --logpath /dev/null`
+    `mongod --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all`
 
 - Verificar estatísticas
 
@@ -145,7 +145,7 @@ graph TD;
     ```
 - Atualizando um documento:
 
-    ```
+    ```javascript
     db.tipo_imovel.updateOne({_id: ObjectId('64f888e0825db8d91dcfcb7f')}, {$set: {nome: "Air B&B"}})
     ```
 - `$set` cria / atualiza um campo em um documento `$unset` remove um campo
@@ -332,7 +332,7 @@ graph TD;
     ])
     ```
 - Outra opção interessante é o `$lookup` que permite realizar *joins* entre **collections**
-    ```javascript
+    ```json
     $lookup:{   from:"Nome coleção destino",
                 localField: "Nome do campo local (origem)",
                 foreignField: "Nome do campo join (destino)",
@@ -448,6 +448,7 @@ graph TD;
         //const ret = await collection.insertOne(doc);
         console.log(ret);
         const cursor = await collection.find();
+        // outra alternativa: const cursor = await collection.find().toArray();
         console.log(await cursor.next());
         // Fecha a conexão
         client.close();
@@ -457,3 +458,99 @@ graph TD;
     testeConexao();
   ```
 - Executar `node testeMongodb.js`
+
+## Replica Sets
+
+`mongod --replSet "rs0" --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all`
+
+    ```json
+        rs.initiate( {
+        _id : "rs0",
+        members: [
+            { _id: 0, host: "192.168.0.6:27017" },
+            { _id: 1, host: "192.168.0.7:27017" }
+        ]
+        })
+    ```
+rs.config()
+
+db.shutdownServer()
+
+mongod --configsvr --replSet configserver --port 27017
+
+mongod --shardsvr --replSet shard1 --port 27018
+
+mongod --shardsvr --replSet shard2 --port 27019
+
+mongod --shardsvr --replSet shard3 --port 27020
+
+mongos --configdb configserver/config:27017 --bind_ip_all --port 27017
+
+- Executar no config
+
+```
+rs.initiate({
+  _id: 'configserver',
+  configsvr: true,
+  version: 1,
+  members: [
+    {
+      _id: 0,
+      host: 'config:27017',
+    },
+  ],
+});
+```
+
+- Configurar os shards
+
+```
+// -- start init-shard1.js --
+rs.initiate({
+  _id: 'shard1',
+  version: 1,
+  members: [{ _id: 0, host: 'shard1:27018' }],
+});
+// -- end init-shard2.js --
+
+// -- init-shard2.js --
+rs.initiate({
+  _id: 'shard2',
+  version: 1,
+  members: [{ _id: 0, host: 'shard2:27019' }],
+});
+// -- end init-shard2.js --
+
+// -- init-shard3.js --
+rs.initiate({
+  _id: 'shard3',
+  version: 1,
+  members: [{ _id: 0, host: 'shard3:27020' }],
+});
+// -- end init-shard3.js --
+```
+
+- Configurando o roteador
+
+```
+sh.addShard('shard1/shard1:27018');
+sh.addShard('shard2/shard2:27019');
+sh.addShard('shard3/shard3:27020');
+```
+- Habilitar o sharding em um banco de dados
+```
+sh.enableSharding('test')
+
+```
+
+- Adicionando sharding em uma Collection
+
+```
+sh.shardCollection("test.books", { title : "hashed" } )
+sh.status()
+```
+- Verificando a distribuição no router
+
+```
+db.books.getShardDistribution()
+```
