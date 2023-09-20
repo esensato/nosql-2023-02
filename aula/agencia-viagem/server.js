@@ -10,28 +10,28 @@ app.set('views', './views')
 
 const viagens = [
     {
-        _id: new ObjectId("650af68d7fcdb46fe08e36b4"),
+        _id: "650af68d7fcdb46fe08e36b4",
         origem: 'SP',
         destino: 'RJ',
         valor: '1000',
         data: new Date("2023-03-01T00:00:00.000Z")
     },
     {
-        _id: new ObjectId("650b1cbf6ad28dfcf969bcc0"),
+        _id: "650b1cbf6ad28dfcf969bcc0",
         origem: 'SP',
         destino: 'MG',
         valor: '300',
         data: new Date("2023-10-02T00:00:00.000Z")
     },
     {
-        _id: new ObjectId("650b2129dd28fa1137968aba"),
+        _id: "650b2129dd28fa1137968aba",
         origem: 'MG',
         destino: 'RJ',
         valor: '200',
         data: new Date("2023-05-01T00:00:00.000Z")
     },
     {
-        _id: new ObjectId("650b21632a36f18df4659a8b"),
+        _id: "650b21632a36f18df4659a8b",
         origem: 'MG',
         destino: 'BA',
         valor: '340',
