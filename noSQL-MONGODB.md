@@ -461,30 +461,43 @@ graph TD;
 
 ## Replica Sets
 
+- Iniciar cada servidor com a opção `replSet`
 `mongod --replSet "rs0" --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all`
-
+- Acessar o servidor master via `mongosh` e adicionar os membros (replicas)
     ```json
         rs.initiate( {
         _id : "rs0",
         members: [
             { _id: 0, host: "192.168.0.6:27017" },
             { _id: 1, host: "192.168.0.7:27017" }
+            { _id: 1, host: "192.168.0.8:27017" }
         ]
         })
     ```
-rs.config()
+- **Obs:** Trocar os endereços de IP
+- Para visualizar a configuração do **Replica Set**
 
-db.shutdownServer()
+    ```javascript
+    rs.config()
+    ```
+- Parar o sevidor primário
+    ```javascript
+    db.shutdownServer()
+    ```
+    
+## Sharding
 
-mongod --configsvr --replSet configserver --port 27017
+    ```
+    mongod --configsvr --replSet configserver --port 27017
 
-mongod --shardsvr --replSet shard1 --port 27018
+    mongod --shardsvr --replSet shard1 --port 27017
 
-mongod --shardsvr --replSet shard2 --port 27019
+    mongod --shardsvr --replSet shard2 --port 27017
 
-mongod --shardsvr --replSet shard3 --port 27020
+    mongod --shardsvr --replSet shard3 --port 27017
 
-mongos --configdb configserver/config:27017 --bind_ip_all --port 27017
+    mongos --configdb configserver/[IP_CONFIG_SERVER]:27017 --bind_ip_all --port 27017
+    ```
 
 - Executar no config
 
