@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+
+        function proximo() {
+            window.location.href = "/proximo";
+        }
+
+        function retirarSenha() {
+            window.location.href = "/retirar";
+        }
+
+    </script>
+
+</head>
+
+<body style="font-family: 'Courier New', Courier, monospace;font-size: medium;">
+
+    <div style="display: flex; flex-direction: column; height: 600px; justify-content: center; align-items: center;">
+
+        <form style="width: 50%;" action="/pesquisar" method="post">
+            <div style="display: flex; flex-direction: row;">
+                <span style="flex: 2">Origem:</span>
+                <input type="text" id="origem" name="origem" style="flex: 8; padding-top: 5px; padding-bottom: 5px;" />
+            </div>
+            <div style="display: flex; flex-direction: row; flex: 1;padding: 10">
+                <span style="flex: 2; ">Destino:</span>
+                <input type="text" id="destino" name="destino"
+                    style="flex: 8; padding-top: 5px; padding-bottom: 5px;" />
+            </div>
+            <div style="display: flex; flex-direction: row; flex: 1;padding: 10">
+                <span style="flex: 2">Valor de:</span>
+                <input type="text" id="valorde" name="valorde"
+                    style="flex: 3; padding-top: 5px; padding-bottom: 5px;" />
+                <span style="flex: 2; text-align: center; padding-top: 10px;">até:</span>
+                <input type="text" id="valorate" name="valorate"
+                    style="flex: 3; padding-top: 5px; padding-bottom: 5px;" />
+            </div>
+            <div style="display: flex; flex-direction: row; flex: 1;padding: 10">
+                <span style="flex: 2">Data de:</span>
+                <input type="text" id="datade" name="datade" style="flex: 3; padding-top: 5px; padding-bottom: 5px;" />
+                <span style="flex: 2;text-align: center; padding-top: 10px;">até:</span>
+                <input type="text" id="dataate" name="dataate"
+                    style="flex: 3; padding-top: 5px; padding-bottom: 5px;" />
+            </div>
+
+            <div style="display: flex; flex-direction: row; flex: 1;">
+                <button style="flex: 1;padding: 20px; margin-top: 10px;" type="submit">Pesquisar</button>
+            </div>
+
+        </form>
+
+        <div
+            style="display: flex; width: 80%;flex-direction: column; border: solid 2px gray; margin-top: 50px; padding: 30PX;">
+            <div style="display: flex; flex:1; flex-direction:row;">
+                <div style="flex: 1; padding: 20; text-align: center;">
+                    Excluir
+                </div>
+                <div style="flex: 1; padding: 20; text-align: center;">
+                    Origem
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    Destino
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    Data
+                </div>
+                <div style="flex: 1;">
+                    Valor
+                </div>
+            </div>
+            <% for (var i=0; i < viagens.length ; i++) { %>
+                <div style="display: flex; flex:1; flex-direction:row;">
+                    <div style="flex: 1; text-align: center">
+                        <a href="/excluir?id=<%=viagens[i]._id%>">
+                            X
+                        </a>
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <a href="/editar?id=<%=viagens[i]._id%>">
+                            <%= viagens[i].origem %>
+                        </a>
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <%= viagens[i].destino %>
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <%= new Date(viagens[i].data).toLocaleDateString('pt-BR') %>
+                    </div>
+                    <div style="flex: 1;">
+                        <%= viagens[i].valor %>
+                    </div>
+                </div>
+                <% } %>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
