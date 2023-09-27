@@ -356,6 +356,42 @@ graph TD;
         imoveis.forEach(function(imovel) { print(imovel.endereco);
     })
     ```
+## Exercício
+
+<img src="img/mongo-ex-1.png" width="200px" height="100px">
+
+Criar uma collection para armazenar dados de reality shows contendo o nome do reality show, a emissora que o transmite e a quantidade de pontos de audiência que o programa tem
+
+Incluir dois documentos na collection
+
+Exibir os documentos inseridos
+
+<img src="img/mongo-ex-2.png" width="200px" height="100px">
+
+Icluir um novo atributo em Reality Shows (embedded document) para armazenar os participantes
+
+Crie 3 participantes para cada Reality Show com os valores que você imaginar com o total de votos igual a 0 e eliminado igual a false
+
+<img src="img/mongo-ex-3.png" width="200px" height="100px">
+
+Incluir um novo atributo em Participante para armazenar os prêmios ganhados pelos participantes durante o reality show
+
+Inclua dois prêmios para cada participante criado anteriormente com uma descrição e valor aleatórios
+
+Incluir mais um prêmio para um dos participantes de algum reality show
+
+Incrementar o total de votos (aleatoriamente) para os quatro participantes dos dois reality shows
+
+Exibir o nome e o total de pontos de audiência das emissoras
+
+Exibir o total de pontos de audiência de um canal específico, incluindo apenas seu nome e os pontos
+
+Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
+
+Exibir o total de votos distribuídos por reality show
+
+Exibir o total de prêmios distribuídos por reality show
+
 ## Exportando / Importando Coleções
 - É possível exportar coleções inteiras para serem importadas em outros bancos de dados
 
