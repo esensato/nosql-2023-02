@@ -384,7 +384,7 @@ graph TD;
 
 - Exibir o nome e o total de pontos de audiência das emissoras
 
-- Exibir o total de pontos de audiência de um canal específico, incluindo apenas seu nome e os pontos
+- Exibir o total de pontos de audiência de uma emissora específica, incluindo apenas seu nome e os pontos
 
 - Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
 
