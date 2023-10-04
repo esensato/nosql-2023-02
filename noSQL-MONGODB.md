@@ -405,7 +405,7 @@ graph TD;
 
     `mongoimport --db=imobiliaria --collection=imobiliaria --file=tipo_imovel.json`
 
-- Utilizar o parâmetro `uri` para servidores remotos
+- Utilizar o parâmetro `uri` para servidores remotos (exemplo: `http://universities.hipolabs.com/search?country=brazil`)
 
 ## Exportando / Importando Banco de Dados
 - Para exportar um banco de dados completo, com todas as coleções
@@ -445,6 +445,27 @@ graph TD;
         }
     }
     } )
+    ```
+- Inserir um documento inválido
+
+    `db.proprietario.insertOne({nome: "Joao"})`
+
+- Resultado
+    ```javascript
+    Additional information: {
+      failingDocumentId: ObjectId("651d49ce119516947ca0f0c3"),
+      details: {
+        operatorName: '$jsonSchema',
+        title: 'Validação de Proprietário',
+        schemaRulesNotSatisfied: [
+          {
+            operatorName: 'required',
+            specifiedAs: { required: [ 'nome', 'cpf', 'total_imoveis' ] },
+            missingProperties: [ 'cpf', 'total_imoveis' ]
+          }
+        ]
+      }
+    }
     ```
 ## Mongodb na Cloud
 
@@ -495,6 +516,22 @@ graph TD;
   ```
 - Executar `node testeMongodb.js`
 
+- Exemplo com **Express**
+
+    ```javascript
+    const start = async () => {
+    
+        await client.connect();
+        db = client.db("viagem");
+        app.listen(8000, () => {
+            console.log('Servidor iniciado porta 8000')
+        });
+    
+    }
+    
+    start();
+    ```
+    
 ## Replica Sets
 
 - Iniciar cada servidor com a opção `replSet`
@@ -523,83 +560,100 @@ graph TD;
     
 ## Sharding
 
-    ```
-    mongod --configsvr --replSet configserver --port 27017
+- É uma técnica de replicação de dados que permite estala horizontal
+- Cada banco de dados é denominado *shard* e funciona de forma independente
+- São necessários três componentes:
+    - Config Server
+    - Roteador (`mongos`)
+    - Shards
 
-    mongod --shardsvr --replSet shard1 --port 27017
+- Configurando os componentes
+    ```javascript
+    mongod --configsvr --replSet configserver --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
 
-    mongod --shardsvr --replSet shard2 --port 27017
+    mongod --shardsvr --replSet shard1 --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
 
-    mongod --shardsvr --replSet shard3 --port 27017
+    mongod --shardsvr --replSet shard2 --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
 
-    mongos --configdb configserver/[IP_CONFIG_SERVER]:27017 --bind_ip_all --port 27017
+    mongod --shardsvr --replSet shard3 --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
+
+    mongos --configdb configserver/[IP_CONFIG_SERVER]:27017 --bind_ip_all --port 27017 --fork --logpath /dev/null
     ```
 
 - Executar no config
 
-```
-rs.initiate({
-  _id: 'configserver',
-  configsvr: true,
-  version: 1,
-  members: [
-    {
-      _id: 0,
-      host: 'config:27017',
-    },
-  ],
-});
-```
+    ```javascript
+
+    ip_host='192.168.0.8:27017';
+
+    rs.initiate({
+      _id: 'configserver',
+      configsvr: true,
+      version: 1,
+      members: [
+        {
+          _id: 0,
+          host: ip_host,
+        },
+      ],
+    });
+    ```
 
 - Configurar os shards
 
-```
-// -- start init-shard1.js --
-rs.initiate({
-  _id: 'shard1',
-  version: 1,
-  members: [{ _id: 0, host: 'shard1:27018' }],
-});
-// -- end init-shard2.js --
+    ```javascript
 
-// -- init-shard2.js --
-rs.initiate({
-  _id: 'shard2',
-  version: 1,
-  members: [{ _id: 0, host: 'shard2:27019' }],
-});
-// -- end init-shard2.js --
+    var shard1 = '192.168.0.7:27017';
 
-// -- init-shard3.js --
-rs.initiate({
-  _id: 'shard3',
-  version: 1,
-  members: [{ _id: 0, host: 'shard3:27020' }],
-});
-// -- end init-shard3.js --
-```
+    rs.initiate({
+      _id: 'shard1',
+      version: 1,
+      members: [{ _id: 0, host: shard1 }],
+    });    
+    
 
+    var shard2 = '192.168.0.6:27017';
+
+    rs.initiate({
+      _id: 'shard2',
+      version: 1,
+      members: [{ _id: 0, host: shard2 }],
+    });
+    
+    
+    var shard3 = '192.168.0.5:27017';
+
+    rs.initiate({
+      _id: 'shard3',
+      version: 1,
+      members: [{ _id: 0, host: shard3 }],
+    });
+    
+    ```
+    
 - Configurando o roteador
 
-```
-sh.addShard('shard1/shard1:27018');
-sh.addShard('shard2/shard2:27019');
-sh.addShard('shard3/shard3:27020');
-```
+    ```javascript
+    sh.addShard('shard1/192.168.0.7:27017');
+    sh.addShard('shard2/192.168.0.6:27017');
+    sh.addShard('shard3/192.168.0.5:27017');
+    ```
 - Habilitar o sharding em um banco de dados
-```
-sh.enableSharding('test')
 
-```
-
+    ```javascript
+    sh.enableSharding('clientes')
+    
+    ```
+    
 - Adicionando sharding em uma Collection
 
-```
-sh.shardCollection("test.books", { title : "hashed" } )
-sh.status()
-```
+    ```javascript
+    sh.shardCollection("clientes.ficha", { cpf : "hashed" } )
+    sh.status()
+    ```
 - Verificando a distribuição no router
 
-```
-db.books.getShardDistribution()
-```
+    ```javascript
+    db.ficha.getShardDistribution()
+    ```
+    
