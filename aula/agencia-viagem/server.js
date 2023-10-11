@@ -1,3 +1,5 @@
+const MongoClient = require('mongodb').MongoClient;
+
 var express = require('express')
 const bodyParser = require('body-parser');
 var app = express()
@@ -7,40 +9,13 @@ app.use(express.static('public'))
 app.set('view engine', 'ejs')
 app.set('views', './views')
 
-
-const viagens = [
-    {
-        _id: "650af68d7fcdb46fe08e36b4",
-        origem: 'SP',
-        destino: 'RJ',
-        valor: '1000',
-        data: new Date("2023-03-01T00:00:00.000Z")
-    },
-    {
-        _id: "650b1cbf6ad28dfcf969bcc0",
-        origem: 'SP',
-        destino: 'MG',
-        valor: '300',
-        data: new Date("2023-10-02T00:00:00.000Z")
-    },
-    {
-        _id: "650b2129dd28fa1137968aba",
-        origem: 'MG',
-        destino: 'RJ',
-        valor: '200',
-        data: new Date("2023-05-01T00:00:00.000Z")
-    },
-    {
-        _id: "650b21632a36f18df4659a8b",
-        origem: 'MG',
-        destino: 'BA',
-        valor: '340',
-        data: new Date("2023-07-15T00:00:00.000Z")
-    }
-];
+var db;
 
 app.get("/", async (req, res) => {
-    res.render('index', { viagens: viagens })
+
+    const ret = await db.collection('passagens').find().toArray();
+
+    res.render('index', { viagens: ret })
 })
 
 app.post("/pesquisar", async (req, res) => {
@@ -61,7 +36,18 @@ app.post("/cadastrar", async (req, res) => {
     const valor = req.body.valor;
     const data = req.body.data;
 
-    res.render('index', { viagens: viagens })
+    const ret = await db.collection('passagens').insertOne({
+        origem: origem,
+        destino: destino,
+        valor: valor,
+        data: new Date(data)
+    })
+
+    console.log(ret);
+
+    const novo = await db.collection('passagens').find().toArray();
+
+    res.render('index', { viagens: novo })
 
 })
 
@@ -89,7 +75,11 @@ app.get("/excluir", async (req, res) => {
 })
 
 const start = async () => {
-
+    const url = 'mongodb+srv://teste:teste@cluster0.wnbdk2i.mongodb.net/?retryWrites=true&w=majority';
+    let client = new MongoClient(url);
+    await client.connect();
+    console.log('Conectado mongodb');
+    db = client.db('agencia-viagem');
     app.listen(8000, () => {
         console.log('Servidor iniciado porta 8000')
     });
