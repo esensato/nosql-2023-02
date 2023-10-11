@@ -6,13 +6,7 @@ https://cassandra.apache.org/
 
 ## Conceitos
 
-- É um banco de dados orientado a documentos
-- Projetado para proporcional escalabilidade horizontal (scale out), isto é, ao invés de investir recursos aumentando
-a capacidade de um servidor novos computadores são adicionados ao cluster
-- Escalabilidade transparente para a aplicação / desenvolvedor à o próprio MongoDB cuida disso
-- Apresenta alta performance
-- Recursos de indexação, replicação, uso de javascript nativo no lado servidor, consultas com expressões regulares, etc...
-- Dados estruturados em **Documentos** agrupados em **Coleções**
+- É um banco de dados baseado em colunas
 
 ## Instalação
 
