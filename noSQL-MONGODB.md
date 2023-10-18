@@ -569,13 +569,13 @@ graph TD;
 
 - Configurando os componentes
     ```javascript
-    mongod --configsvr --replSet configserver --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
+    mongod --configsvr --replSet configserver --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
 
-    mongod --shardsvr --replSet shard1 --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
+    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
 
-    mongod --shardsvr --replSet shard2 --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
+    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
 
-    mongod --shardsvr --replSet shard3 --port 27017 --dbpath ~/db --fork --logpath /dev/null --bind_ip_all
+    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
 
     mongos --configdb configserver/[IP_CONFIG_SERVER]:27017 --bind_ip_all --port 27017 --fork --logpath /dev/null
     ```
@@ -602,41 +602,22 @@ graph TD;
 - Configurar os shards
 
     ```javascript
-
-    var shard1 = '192.168.0.7:27017';
-
-    rs.initiate({
-      _id: 'shard1',
-      version: 1,
-      members: [{ _id: 0, host: shard1 }],
-    });    
-    
-
-    var shard2 = '192.168.0.6:27017';
-
-    rs.initiate({
-      _id: 'shard2',
-      version: 1,
-      members: [{ _id: 0, host: shard2 }],
-    });
-    
-    
-    var shard3 = '192.168.0.5:27017';
-
-    rs.initiate({
-      _id: 'shard3',
-      version: 1,
-      members: [{ _id: 0, host: shard3 }],
-    });
-    
+         rs.initiate( {
+        _id : "shard",
+        members: [
+            { _id: 0, host: "192.168.0.6:27017" },
+            { _id: 1, host: "192.168.0.7:27017" },
+            { _id: 2, host: "192.168.0.8:27017" }
+        ]
+        })
     ```
     
 - Configurando o roteador
 
     ```javascript
-    sh.addShard('shard1/192.168.0.7:27017');
-    sh.addShard('shard2/192.168.0.6:27017');
-    sh.addShard('shard3/192.168.0.5:27017');
+    sh.addShard('shard/192.168.0.7:27017');
+    sh.addShard('shard/192.168.0.6:27017');
+    sh.addShard('shard/192.168.0.8:27017');
     ```
 - Habilitar o sharding em um banco de dados
 

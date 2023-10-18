@@ -50,42 +50,37 @@ dnf update -y
 `yum install -y java`
 
 - Diretório `apache-cassandra-4.1.3/bin`
-- 
+
 `./cassandra -v`
+ 
+## Configuração Java JRE
 
-## Configuração Mínima
+- Efetuar um *backup* do arquivo de configuração original e criar um novo para substituí-lo
 
-- Editar o arquivo `/etc/cassandra/conf/cassandra.yaml`
+    - Acessar o diretório `apache-cassandra-4.1.3/conf`
+    - Mover o arquivo original `mv jvm-server.options jvm-server-original.options`
+    - Criar um novo arquivo `vi jvm-server.options`
+    - Copiar o código abaixo
+    ```java
+    -ea
+    -da:net.openhft...
+    -XX:+UseThreadPriorities
+    -XX:+HeapDumpOnOutOfMemoryError
+    -Xss256k
+    -XX:+AlwaysPreTouch
+    -XX:-UseBiasedLocking
+    -XX:+UseTLAB
+    -XX:+ResizeTLAB
+    -XX:+UseNUMA
+    -XX:+PerfDisableSharedMem
+    -Djava.net.preferIPv4Stack=true
+    -Xms1G
+    -Xmx1G
+    ```
+    - No **vi** pressionar a tecla **i**
+    - Pressionar a tecla **esc**, **:** e digitar **wq!** depois **Enter** 
 
-```yaml
-cluster_name: 'Meu_Cluster'
-seeds: 192.168.0.13
-storage_port: 7000
-listen_address: 192.168.0.13
-native_transport_port: 9042
-``````
-
-
-```
--ea
--da:net.openhft...
--XX:+UseThreadPriorities
--XX:+HeapDumpOnOutOfMemoryError
--Xss256k
--XX:+AlwaysPreTouch
--XX:-UseBiasedLocking
--XX:+UseTLAB
--XX:+ResizeTLAB
--XX:+UseNUMA
--XX:+PerfDisableSharedMem
--Djava.net.preferIPv4Stack=true
--Xms1G
--Xmx1G
-```
 ## Iniciando o servidor
 
-`cassandra -R`
-
-rpc_address is the address on which Cassandra listens to the client calls.
-
-listen_address is the address on which Cassandra listens to the other Cassandra nodes.
+- Acessar o diretório `apache-cassandra-4.1.3/bin`
+- Executar `./cassandra -R`
